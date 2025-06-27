@@ -1,0 +1,173 @@
+{
+  "object": "page",
+  "id": "1ded7342-e571-802e-8d06-fca37dbe8bc4",
+  "created_time": "2025-04-23T13:28:00.000Z",
+  "last_edited_time": "2025-05-03T03:23:00.000Z",
+  "created_by": {
+    "object": "user",
+    "id": "ddf8f9da-d6d5-4c0a-ad8e-05836f719816"
+  },
+  "last_edited_by": {
+    "object": "user",
+    "id": "ddf8f9da-d6d5-4c0a-ad8e-05836f719816"
+  },
+  "cover": null,
+  "icon": null,
+  "parent": {
+    "type": "database_id",
+    "database_id": "16ad7342-e571-80c4-a065-c7a1015871d3"
+  },
+  "archived": false,
+  "in_trash": false,
+  "properties": {
+    "Series": {
+      "id": "%3FxsZ",
+      "type": "relation",
+      "relation": [],
+      "has_more": false
+    },
+    "Section": {
+      "id": "%40ofb",
+      "type": "select",
+      "select": {
+        "id": "rFL:",
+        "name": "Learning",
+        "color": "red"
+      }
+    },
+    "Status": {
+      "id": "BXDw",
+      "type": "status",
+      "status": {
+        "id": "f4ef3434-400a-4503-9459-d24db742210b",
+        "name": "Done",
+        "color": "green"
+      }
+    },
+    "Weight": {
+      "id": "MF%3FD",
+      "type": "number",
+      "number": 1
+    },
+    "Publish Date": {
+      "id": "S%3Bkc",
+      "type": "date",
+      "date": {
+        "start": "2025-04-30",
+        "end": null,
+        "time_zone": null
+      }
+    },
+    "URL": {
+      "id": "ZyoT",
+      "type": "url",
+      "url": null
+    },
+    "URL Database Links": {
+      "id": "Z%7B%7D%3E",
+      "type": "relation",
+      "relation": [],
+      "has_more": false
+    },
+    "Type": {
+      "id": "bJ%5Da",
+      "type": "select",
+      "select": {
+        "id": "29b10d3a-6dc6-452c-a6e0-46cf890f78e2",
+        "name": "Series Page",
+        "color": "green"
+      }
+    },
+    "Cover": {
+      "id": "bKp%5C",
+      "type": "files",
+      "files": [
+        {
+          "name": "cover.jpg",
+          "type": "file",
+          "file": {
+            "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/00201b62-457b-442a-abb2-606117be8411/678c9bcd-9856-4a70-b4bc-01baea6bf456/cover.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB466XJ5GVFGF%2F20250503%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20250503T032808Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEEsaCXVzLXdlc3QtMiJHMEUCIQC3eFS48jXzoSDptqeVT9cOQDtAB684lvuh%2FmTxUeaJJwIgSkT2UBSe4AeqpltFnt7Ff5xs07rOwwHzAMsxjMwK5YIqiAQI5P%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAAGgw2Mzc0MjMxODM4MDUiDEHhaz1g%2FQJEpEmkhyrcA1d%2Fg3revM98BnwdgT54d53COTb1vjaIk2S%2FhZzlxfp5yMrSn7HoH2PzyW5RIZ%2FA%2B7GbSYfpOF3wGCrbkYxj065xMEbN7BAqjLBvOPSN9DFQPhHOGh2mfvbnygTCwizHI5E62UBB7A7APRid5LUgQbgRA0CMxOtwXyEgUFlSYmumg2ChfT42FSZcid4KqU%2BmUQ84IBkm4tDfkZwvcLxykZfdqqiBEB0LnJmLbLkfdXIhLl%2Ff%2BCpUbbjhN9IILnNXaRAWy04uBIxhgXxr7A07sMUaUhTxC394VtowQUaUFNFkwBguRJUCVRLhREWpvYXntP%2BDzJG5FryApw6BjeQiIrTavfQQ8zFzsiLCrwuW891BcDVyEBCtwfTdzLFB9%2BG6LFdoz1jkjRwruWtVrKFZ6mNiCVbFKkqcONZlpl%2FNSpIAhHScR28APgE9xQvHFoQ6R2mEMeX6j2Onb3AlLBOqvZbYK8G6yEAePdbpdM%2Bu7L53rjc1d67WpHx3ds6wMm%2FFJLup9ULJUu0WYtOSd4ZIYlpV1VokSJDAo3VcDSjxw6Bl4xZwMFcixkMwjNVNxXluxy23g3hJhfuT9RHCQK%2BE5tU1HIY8JJqkpg0UExsyNHXJbFY6ovFBLn8KGMwFMKaF1sAGOqUB5Rv5yAYLGjuQWEbE0SPntRkiF2pbr%2FAVVwgSqS1x0oX%2B6JR0dRHojEb3ehN4uBb%2FYHZO98piVI3HCvho7IKpbuYLvVR7XPpNMK%2Fe50pR0booZePkUfnIBM8x%2BYED%2F%2Bk%2Bt9al9PLWcLteHweh0TO8L5pQs3aW0su6aEPTFB%2F6GPWjHpBh5cxCc3lUn6nm%2BhPueim2DE7sQ4%2FZu%2BvWffYdsN6nbI7J&X-Amz-Signature=4b0fbc2bfdaaa4f320390f6bf8e51c79f9535ebf5b1251bf86431a1c3aa8b72a&X-Amz-SignedHeaders=host&x-id=GetObject",
+            "expiry_time": "2025-05-03T04:28:08.840Z"
+          }
+        }
+      ]
+    },
+    "Tags": {
+      "id": "krBQ",
+      "type": "multi_select",
+      "multi_select": [
+        {
+          "id": "2f151a4f-d925-472f-bd72-e92467750459",
+          "name": "foo",
+          "color": "default"
+        },
+        {
+          "id": "93684789-a495-4431-99eb-60d63b219eab",
+          "name": "bar",
+          "color": "green"
+        }
+      ]
+    },
+    "Excerpt": {
+      "id": "mAKh",
+      "type": "rich_text",
+      "rich_text": [
+        {
+          "type": "text",
+          "text": {
+            "content": "In this multi-part series, we will delve into the intricacies of deploying multiple Minecraft servers using Kubernetes.",
+            "link": null
+          },
+          "annotations": {
+            "bold": false,
+            "italic": false,
+            "strikethrough": false,
+            "underline": false,
+            "code": false,
+            "color": "default"
+          },
+          "plain_text": "In this multi-part series, we will delve into the intricacies of deploying multiple Minecraft servers using Kubernetes.",
+          "href": null
+        }
+      ]
+    },
+    "Glossary Links": {
+      "id": "otq%3D",
+      "type": "relation",
+      "relation": [],
+      "has_more": false
+    },
+    "Snippet Package": {
+      "id": "wfNq",
+      "type": "relation",
+      "relation": [],
+      "has_more": false
+    },
+    "Name": {
+      "id": "title",
+      "type": "title",
+      "title": [
+        {
+          "type": "text",
+          "text": {
+            "content": "Introduction",
+            "link": null
+          },
+          "annotations": {
+            "bold": true,
+            "italic": false,
+            "strikethrough": false,
+            "underline": false,
+            "code": false,
+            "color": "default"
+          },
+          "plain_text": "Introduction",
+          "href": null
+        }
+      ]
+    }
+  },
+  "url": "https://www.notion.so/Introduction-1ded7342e571802e8d06fca37dbe8bc4",
+  "public_url": null,
+  "request_id": "f5e0dd0d-d518-478f-9cb6-76ff77c4cc40"
+}
