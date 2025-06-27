@@ -8,14 +8,12 @@
     "strictNullChecks": false,
     "target": "ES2022",
     "paths": {
-        "$lib": ["./src"],
-        "$lib/*": ["./src/*"]
-    }
+      "$lib": ["./src"],
+      "$lib/*": ["./src/*"]
+    },
+    "baseUrl": ".",
+    "rootDir": "."
   },
-  "exclude": [
-    "**/*.spec.ts"
-  ],
-  "include": [
-    "./src/**/*"
-  ]
+  "exclude": ["**/*.spec.ts"],
+  "include": ["./src/**/*"]
 }
