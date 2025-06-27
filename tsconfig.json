@@ -6,7 +6,11 @@
     "noEmit": true,
     "strict": true,
     "strictNullChecks": false,
-    "target": "ES2022"
+    "target": "ES2022",
+    "paths": {
+        "$lib": ["./src"],
+        "$lib/*": ["./src/*"]
+    }
   },
   "exclude": [
     "**/*.spec.ts"

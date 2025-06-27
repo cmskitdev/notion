@@ -1,9 +1,9 @@
 import path from "path";
-import { notion } from "../client/client";
 import { config } from "../config/config";
 import { save } from "../util/fs";
 import { Options } from "../util/options";
 import { Page } from "./page";
+import { notion } from "$lib";
 
 export const getPages = async (databaseName: string) => {
   const database = config.databases[databaseName];
