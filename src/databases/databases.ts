@@ -2,14 +2,17 @@ import {
   DatabaseObjectResponse,
   GetDatabaseResponse,
 } from "@notionhq/client/build/src/api-endpoints";
-import { notion } from "../client/client";
 import { config } from "../config/config";
 import { debug } from "../util/debug";
 import { save } from "../util/fs";
 import { Database } from "./database";
+import { Client } from "@notionhq/client";
+
+const notion = new Client();
 
 export const getDatabases = async (): Promise<Database[]> => {
   const response = await notion.search({
+    query: "",
     filter: {
       property: "object",
       value: "database",
@@ -46,7 +49,7 @@ export const getDatabases = async (): Promise<Database[]> => {
 export const queryDatabase = async (
   databaseId: string
 ): Promise<GetDatabaseResponse> => {
-  const response = await notion.databases.retrieve({
+  const response = await notion.retrieve({
     database_id: databaseId,
   });
 
