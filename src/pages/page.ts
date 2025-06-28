@@ -29,7 +29,6 @@ export class Page {
       const relationPromises = this.options.relations.flatMap((relation) => {
         const relationProperty = this.object.properties[relation];
 
-        // Type guard to ensure we have a relation property
         if (relationProperty?.type !== "relation") {
           trace(`Property ${relation} is not a relation type`, {
             type: relationProperty?.type,
@@ -52,8 +51,6 @@ export class Page {
       const resolvedPages = await Promise.all(relationPromises);
       result.children.push(...resolvedPages);
     }
-
-    trace("Page.resolve()", result);
 
     // debugNested(findProperties(this.object.properties, "relation"));
     return;

@@ -1,14 +1,12 @@
+import { notion } from "$lib/client";
 import {
   DatabaseObjectResponse,
   GetDatabaseResponse,
+  PageObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 import { config } from "../config/config";
-import { debug } from "../util/debug";
 import { save } from "../util/fs";
 import { Database } from "./database";
-import { Client } from "@notionhq/client";
-
-const notion = new Client();
 
 export const getDatabases = async (): Promise<Database[]> => {
   const response = await notion.search({
@@ -18,9 +16,6 @@ export const getDatabases = async (): Promise<Database[]> => {
       value: "database",
     },
   });
-
-  console.log(config.excludes);
-  console.log(config.excludes);
 
   return response.results
     .filter((result) => {
@@ -49,15 +44,19 @@ export const getDatabases = async (): Promise<Database[]> => {
 export const queryDatabase = async (
   databaseId: string
 ): Promise<GetDatabaseResponse> => {
-  const response = await notion.retrieve({
+  const response = await notion.databases.retrieve({
     database_id: databaseId,
   });
 
   return response;
 };
 
-export const search = async (databaseName: string, query: string) => {
-  debug("search", databaseName, query);
+export type SearchResult = (PageObjectResponse | DatabaseObjectResponse)[];
+
+export const search = async (
+  databaseName: string,
+  query: string
+): Promise<SearchResult> => {
   if (!config.databases[databaseName]) {
     throw new Error(`Database "${databaseName}" not found!`);
   }
@@ -78,15 +77,15 @@ export const search = async (databaseName: string, query: string) => {
     },
   });
 
-  debug("search", response);
+  const results: SearchResult = [];
 
   for (const result of response.results) {
+    results.push(result as SearchResult[number]);
     const page = await notion.pages.retrieve({
       page_id: result.id,
     });
-    debug("page", page);
-    save(`./schemas/page.json`, page);
+    save(`databases-search-${databaseName}-${result.id}`, page);
   }
 
-  return response;
+  return results;
 };

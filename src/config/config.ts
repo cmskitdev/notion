@@ -59,7 +59,7 @@ export class Config {
   }
 }
 
-export const getConfig = (path: string): Config => {
+export const getConfig = async (path: string): Promise<Config> => {
   if (!path) {
     throw new Error("CONFIG environment variable is not set!");
   }
@@ -68,7 +68,7 @@ export const getConfig = (path: string): Config => {
     throw new Error(`Config file "${path}" does not exist!`);
   }
 
-  const f = require(`${process.cwd()}/${path}`);
+  const f = await import(`${process.cwd()}/${path}`);
   const databases: Config["databases"] = {};
   const excludes: Config["excludes"] = [];
 
@@ -82,7 +82,7 @@ export const getConfig = (path: string): Config => {
   return { databases, excludes };
 };
 
-export const config = getConfig(process.env.CONFIG!);
+export const config = await getConfig(process.env.CONFIG!);
 
 export const saveConfig = (config: Config) => {
   if (!process.env.CONFIG) {

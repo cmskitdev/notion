@@ -1,11 +1,10 @@
-import path from "path";
+import { notion } from "$lib/client";
+import { GetPageResponse } from "@notionhq/client";
 import { config } from "../config/config";
-import { save } from "../util/fs";
 import { Options } from "../util/options";
 import { Page } from "./page";
-import { notion } from "$lib";
 
-export const getPages = async (databaseName: string) => {
+export const getPages = async (databaseName: string): Promise<Page[]> => {
   const database = config.databases[databaseName];
   if (!database) {
     throw new Error(`Database "${databaseName}" not found!`);
@@ -15,12 +14,7 @@ export const getPages = async (databaseName: string) => {
     database_id: database.id,
   });
 
-  save(
-    path.resolve(__dirname, `../../tmp/${databaseName}.pages.json`),
-    response.results
-  );
-
-  return response.results;
+  return response.results.map((page) => new Page(page as GetPageResponse));
 };
 
 export const getPage = async (

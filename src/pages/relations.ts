@@ -64,7 +64,7 @@ export const getPageWithNestedSeries = async (
   pageId: string,
   relationalPropertyNames: string[]
 ) => {
-  const page = await getPage(pageId, { resolveRelations: true });
+  const page = await getPage(pageId, { relations: relationalPropertyNames });
 
   // for (const relationalPropertyName of relationalPropertyNames) {
   //   const nestedProperties = await resolveRelations(
