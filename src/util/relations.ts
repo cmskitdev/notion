@@ -22,7 +22,14 @@ interface NestedRelation {
   nested_pages?: any[];
 }
 
-export const findRelationProperties = (properties: any) => {
+/**
+ * Finds all properties that are of type relation.
+ *
+ * @param properties - The properties object from a Notion page or database query result.
+ *
+ * @returns An array of relation property names.
+ */
+export const findRelationProperties = (properties: any): string[] => {
   return Object.keys(properties).filter(
     (key) => properties[key]?.type === "relation"
   );
@@ -111,33 +118,33 @@ export const resolveRelations = async (
  * @param relationPropertyNames - Array of relation property names to nest
  * @returns The properties object with all specified relation properties nested
  */
-export const nestMultipleRelationProperties = async (
-  properties: Record<string, any>,
-  relationPropertyNames: string[]
-): Promise<Record<string, any>> => {
-  let nestedProperties = { ...properties };
+// export const nestMultipleRelationProperties = async (
+//   properties: Record<string, any>,
+//   relationPropertyNames: string[]
+// ): Promise<Record<string, any>> => {
+//   let nestedProperties = { ...properties };
 
-  for (const propertyName of relationPropertyNames) {
-    nestedProperties = await resolveRelations(nestedProperties, propertyName);
-  }
+//   for (const propertyName of relationPropertyNames) {
+//     nestedProperties = await resolveRelations(nestedProperties, propertyName);
+//   }
 
-  return nestedProperties;
-};
+//   return nestedProperties;
+// };
 
-/**
- * Automatically detects and nests all relation properties in a properties object.
- *
- * @param properties - The properties object from a Notion page or database query result
- * @returns The properties object with all relation properties nested
- */
-export const nestAllRelationProperties = async (
-  properties: Record<string, any>
-): Promise<Record<string, any>> => {
-  const relationPropertyNames = Object.keys(properties).filter(
-    (key) => properties[key]?.type === "relation"
-  );
+// /**
+//  * Automatically detects and nests all relation properties in a properties object.
+//  *
+//  * @param properties - The properties object from a Notion page or database query result
+//  * @returns The properties object with all relation properties nested
+//  */
+// export const nestAllRelationProperties = async (
+//   properties: Record<string, any>
+// ): Promise<Record<string, any>> => {
+//   const props = Object.keys(properties).filter(
+//     (key) => properties[key]?.type === "relation"
+//   );
 
-  debug("Found relation properties", { relationPropertyNames });
+//   debug("found relation properties", { props });
 
-  return nestMultipleRelationProperties(properties, relationPropertyNames);
-};
+//   return nestMultipleRelationProperties(properties, props);
+// };

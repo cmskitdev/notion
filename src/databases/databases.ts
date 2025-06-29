@@ -1,8 +1,8 @@
 import { notion } from "$lib/client";
+import { Page } from "$lib/pages/page";
 import {
   DatabaseObjectResponse,
   GetDatabaseResponse,
-  PageObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 import { config } from "../config/config";
 import { save } from "../util/fs";
@@ -51,12 +51,10 @@ export const queryDatabase = async (
   return response;
 };
 
-export type SearchResult = (PageObjectResponse | DatabaseObjectResponse)[];
-
 export const search = async (
   databaseName: string,
   query: string
-): Promise<SearchResult> => {
+): Promise<Page[]> => {
   if (!config.databases[databaseName]) {
     throw new Error(`Database "${databaseName}" not found!`);
   }
@@ -77,13 +75,13 @@ export const search = async (
     },
   });
 
-  const results: SearchResult = [];
+  const results: SearchResult[] = [];
 
   for (const result of response.results) {
-    results.push(result as SearchResult[number]);
     const page = await notion.pages.retrieve({
       page_id: result.id,
     });
+    results.push(new Page(page));
     save(`databases-search-${databaseName}-${result.id}`, page);
   }
 

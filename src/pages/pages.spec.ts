@@ -1,6 +1,5 @@
-import { inspect } from "util";
-import { describe, expect, test } from "vitest";
-import { search } from "../databases/databases";
+import { beforeAll, describe, expect, test } from "vitest";
+import { search, SearchResult } from "../databases/databases";
 import { save } from "../util/fs";
 
 describe("pages", () => {
@@ -15,18 +14,23 @@ describe("pages", () => {
   //   }
   // });
 
+  let artifact: SearchResult;
+
+  beforeAll(async () => {
+    artifact = await search("Content", "minecraft");
+  });
+
   test(`search: istio`, async () => {
-    const response = await search("Content", "minecraft");
-    console.log(
-      inspect(Object.keys(response), {
-        depth: null,
-        colors: true,
-        compact: false,
-      })
-    );
-    expect(response).toBeDefined();
-    save(`pages-search-content-minecraft`, response);
-    // save("search-content-istio.json", response);
+    expect(artifact).toBeDefined();
+    save(`pages-search-content-minecraft`, artifact);
+  });
+
+  test("resolve relational properties", async () => {
+    for (const page of artifact.results) {
+      const resolvedPage = await resolveAllRelations(page);
+      expect(resolvedPage).toBeDefined();
+      save(`pages-search-content-minecraft-resolved`, resolvedPage);
+    }
   });
 
   // test(`getPagesWithNestedSeries`, async () => {

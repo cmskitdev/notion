@@ -1,3 +1,4 @@
+import { PageBase } from "@cmskit/common";
 import {
   GetPageResponse,
   PageObjectResponse,
@@ -6,14 +7,28 @@ import { trace } from "../util/debug";
 import { Options } from "../util/options";
 import { getPage } from "./pages";
 
-export class Page {
+export class Page<T> implements PageBase<T> {
   object: PageObjectResponse;
   options: Options;
+  properties: Map<string, string | number | boolean | Date>;
 
   constructor(object: GetPageResponse, options?: Options) {
-    this.object = object as PageObjectResponse;
+    const v = object as PageObjectResponse;
+    this.object = v;
     this.options = options;
+    this.properties = new Map(Object.entries(v.properties));
   }
+  metadata: { id: string };
+  frontmatter: {
+    title: string;
+    description: string;
+    url: string;
+    created: Date;
+    updated: Date;
+    author: string;
+  };
+  children: PageBase<T>[];
+  content: string;
 
   get id() {
     return this.object.id;

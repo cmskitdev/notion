@@ -1,8 +1,9 @@
+import { resolveRelations } from "$lib/util/relations";
 import { notion } from "../client/client";
 import { config } from "../config/config";
+import { Page } from "../pages/page";
+import { getPage } from "../pages/pages";
 import { debug } from "../util/debug";
-import { nestAllRelationProperties, resolveRelations } from "../util/relations";
-import { getPage } from "./pages";
 
 export const findRelationProperties = (properties: any) => {
   return Object.keys(properties).filter(
@@ -121,4 +122,19 @@ export const getPagesWithAllNestedRelations = async (databaseName: string) => {
     ...response,
     results: resultsWithNestedRelations,
   };
+};
+
+/**
+ * Takes a page and will recursively resolve all relation properties.
+ *
+ * @param page - The page to resolve
+ *
+ * @returns Updated page with all relations resolved.
+ */
+export const resolveAllRelations = async (page: Page): Promise<Page> => {
+  const relationPropertyNames = findRelationProperties(page.properties);
+  const nestedProperties = await resolveRelations(
+    page.properties,
+    relationPropertyNames[0]
+  );
 };
