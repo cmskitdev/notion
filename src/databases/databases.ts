@@ -6,7 +6,6 @@ import {
 } from "@notionhq/client/build/src/api-endpoints";
 import { config } from "../config/config";
 import { save } from "../util/fs";
-import { Database } from "./database";
 
 export const getDatabases = async (): Promise<Database[]> => {
   const response = await notion.search({
@@ -41,6 +40,13 @@ export const getDatabases = async (): Promise<Database[]> => {
     .map((result) => new Database(result as DatabaseObjectResponse));
 };
 
+export const getDatabase = async (databaseId: string): Promise<Database> => {
+  const response = await notion.databases.retrieve({
+    database_id: databaseId,
+  });
+  return new Database(response as DatabaseObjectResponse);
+};
+
 export const queryDatabase = async (
   databaseId: string
 ): Promise<GetDatabaseResponse> => {
@@ -54,7 +60,7 @@ export const queryDatabase = async (
 export const search = async (
   databaseName: string,
   query: string
-): Promise<Page[]> => {
+): Promise<Page<any>[]> => {
   if (!config.databases[databaseName]) {
     throw new Error(`Database "${databaseName}" not found!`);
   }

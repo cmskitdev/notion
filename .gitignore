@@ -2,3 +2,4 @@
 .vite
 tmp
 node_modules
+**/*export*

@@ -1,21 +1,29 @@
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 
-export const save = (filename: string, content: object) => {
-  const tmpDir = path.resolve(__dirname, "../../tmp");
-  if (!fs.existsSync(tmpDir)) {
-    fs.mkdirSync(tmpDir);
-  }
-  fs.writeFileSync(
-    path.resolve(tmpDir, `${new Date().toUTCString()}-${filename}.json`),
-    JSON.stringify(content, null, 2)
-  );
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export const getBasePath = (...additionalPath: string[]) => {
+  return path.resolve(__dirname, "../../", ...additionalPath);
 };
 
-export const load = (filename: string) => {
-  const tmpDir = path.resolve(__dirname, "../../tmp");
-  if (!fs.existsSync(tmpDir)) {
-    throw new Error(`tmp directory does not exist: ${tmpDir}`);
+export const save = (p: string, content: object) => {
+  // const dir = path.dirname(p);
+  const dir = path.dirname(p);
+  console.log(dir);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, {
+      recursive: true,
+    });
   }
-  return JSON.parse(fs.readFileSync(path.resolve(tmpDir, filename), "utf8"));
+  fs.writeFileSync(p, JSON.stringify(content, null, 2));
+};
+
+export const load = (p: string) => {
+  if (!fs.existsSync(p)) {
+    throw new Error(`file does not exist: ${p}`);
+  }
+  return JSON.parse(fs.readFileSync(p, "utf8"));
 };
