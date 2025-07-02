@@ -2,6 +2,8 @@
 
 Notion Exporter is a tool for exporting Notion workspace content to JSON files.
 
+![](2025-07-01-11-59-05.png)
+
 ## Key Features
 
 - ✅ Exports all workspace content recursively.
