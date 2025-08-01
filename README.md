@@ -14,7 +14,7 @@ This package provides comprehensive, type-safe Go definitions for all Notion API
 ## Quick Start
 
 ```go
-import "github.com/notioncodes/types"
+import "github.com/cmskitdev/notion/types"
 
 // Create a page with properties
 parent := &types.Parent{

@@ -1,3 +1,3 @@
-module github.com/notioncodes/notion
+module github.com/cmskitdev/notion
 
 go 1.24.2

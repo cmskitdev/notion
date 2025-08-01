@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/notioncodes/client"
-	"github.com/notioncodes/engine"
-	"github.com/notioncodes/plugin-notion/types"
+	"github.com/cmskitdev/client"
+	"github.com/cmskitdev/engine"
+	"github.com/cmskitdev/notion/types"
 )
 
 // NotionSource implements DataSource for reading data from Notion
