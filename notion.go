@@ -348,8 +348,8 @@ func (ns *NotionSource) convertPageToDataItem(page *client.GetPageResult) *engin
 		Metadata: engine.ItemMetadata{
 			SourceType:  "notion",
 			OriginalID:  string(page.Page.ID),
-			CreatedAt:   page.Page.CreatedTime.Time,
-			ModifiedAt:  page.Page.LastEditedTime.Time,
+			CreatedAt:   page.Page.CreatedTime,
+			ModifiedAt:  page.Page.LastEditedTime,
 			ProcessedAt: &now,
 			ValidationState: engine.ValidationState{
 				IsValid:     false,
