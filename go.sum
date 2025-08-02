@@ -1,5 +1,7 @@
 github.com/cmskitdev/client v0.0.0-20250801072105-59648a9661cb h1:IbodaDYwtkL88sOGuaoJfJBKCRPTPHzazUoSbNzn63k=
 github.com/cmskitdev/client v0.0.0-20250801072105-59648a9661cb/go.mod h1:iU3JRDtiLTmIaQRwAXMTrfh6gBc/VBTv5Ce4ZtXBGaw=
+github.com/cmskitdev/common v0.0.0-20250801151543-65d32db5db38 h1:oZevjD6cVpGGOqCM8Jt7B2R0nVI80B7rOfLVBwmHX/M=
+github.com/cmskitdev/common v0.0.0-20250801151543-65d32db5db38/go.mod h1:oopWBp10TW674Zmy9FNQKT6ZfmP73agqBnLg584ixog=
 github.com/cmskitdev/engine v0.0.0-20250801071936-63dc5c1a7a56 h1:2TDE8try9LKf24L5aTKTuNkomIHSMS8dZwqyGfqHBfk=
 github.com/cmskitdev/engine v0.0.0-20250801071936-63dc5c1a7a56/go.mod h1:LvcPcFAmXJNISuMD6StSUwdUH5M8efadq8/jNXITe2M=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

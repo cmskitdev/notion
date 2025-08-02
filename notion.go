@@ -1,3 +1,4 @@
+// Package notion implements a plugin for reading data from Notion.
 package notion
 
 import (
@@ -7,114 +8,23 @@ import (
 	"time"
 
 	"github.com/cmskitdev/client"
+	"github.com/cmskitdev/common"
 	"github.com/cmskitdev/engine"
 	"github.com/cmskitdev/notion/types"
+	"github.com/mateothegreat/go-multilog/multilog"
 )
 
-// NotionSource implements DataSource for reading data from Notion
-type NotionSource struct {
+// Plugin implements DataSource for reading data from Notion
+type Plugin struct {
 	client  *client.Client
 	config  NotionSourceConfig
 	metrics *NotionSourceMetrics
 	mu      sync.RWMutex
 }
 
-// NotionSourceConfig configures the Notion data source
-type NotionSourceConfig struct {
-	// Object types to read
-	IncludeDatabases bool `json:"include_databases"`
-	IncludePages     bool `json:"include_pages"`
-	IncludeBlocks    bool `json:"include_blocks"`
-	IncludeComments  bool `json:"include_comments"`
-	IncludeUsers     bool `json:"include_users"`
-
-	// Depth control for hierarchical objects
-	MaxDepth int `json:"max_depth"`
-
-	// Pagination and performance
-	PageSize          int     `json:"page_size"`
-	RequestsPerSecond float64 `json:"requests_per_second"`
-	MaxConcurrent     int     `json:"max_concurrent"`
-
-	// Pagination-specific configuration
-	EnablePagination   bool          `json:"enable_pagination"`
-	MaxPagesPerQuery   int           `json:"max_pages_per_query"`
-	PaginationTimeout  time.Duration `json:"pagination_timeout"`
-	StreamingBatchSize int           `json:"streaming_batch_size"`
-
-	// Filtering
-	DatabaseIDs []string           `json:"database_ids,omitempty"`
-	PageIDs     []string           `json:"page_ids,omitempty"`
-	Filters     []NotionTypeFilter `json:"filters,omitempty"`
-	SearchQuery string             `json:"search_query,omitempty"`
-	DateRange   *NotionDateRange   `json:"date_range,omitempty"`
-	Properties  []string           `json:"properties,omitempty"` // Specific properties to include
-}
-
-// NotionTypeFilter filters objects by type and properties
-type NotionTypeFilter struct {
-	ObjectType engine.ObjectType `json:"object_type"`
-	Conditions []FilterCondition `json:"conditions"`
-}
-
-// FilterCondition represents a single filter condition
-type FilterCondition struct {
-	Property string      `json:"property"`
-	Operator string      `json:"operator"` // equals, contains, starts_with, etc.
-	Value    interface{} `json:"value"`
-}
-
-// NotionDateRange filters objects by creation/modification date
-type NotionDateRange struct {
-	Start    *time.Time `json:"start,omitempty"`
-	End      *time.Time `json:"end,omitempty"`
-	DateType string     `json:"date_type"` // created_time, last_edited_time
-}
-
-// NotionSourceMetrics tracks source performance
-type NotionSourceMetrics struct {
-	ObjectsRead       int64         `json:"objects_read"`
-	PagesRead         int64         `json:"pages_read"`
-	BlocksRead        int64         `json:"blocks_read"`
-	CommentsRead      int64         `json:"comments_read"`
-	DatabasesRead     int64         `json:"databases_read"`
-	UsersRead         int64         `json:"users_read"`
-	RequestsMade      int64         `json:"requests_made"`
-	ErrorsEncountered int64         `json:"errors_encountered"`
-	TotalDuration     time.Duration `json:"total_duration"`
-	StartTime         time.Time     `json:"start_time"`
-	EndTime           *time.Time    `json:"end_time,omitempty"`
-	mu                sync.RWMutex
-}
-
-// DefaultNotionSourceConfig returns sensible defaults
-func DefaultNotionSourceConfig() NotionSourceConfig {
-	return NotionSourceConfig{
-		IncludeDatabases:   true,
-		IncludePages:       true,
-		IncludeBlocks:      true,
-		IncludeComments:    false, // Comments are expensive to fetch
-		IncludeUsers:       false, // Users are typically not needed in exports
-		MaxDepth:           3,
-		PageSize:           100,
-		RequestsPerSecond:  3.0, // Notion API rate limit
-		MaxConcurrent:      5,
-		EnablePagination:   true,
-		MaxPagesPerQuery:   100, // Reasonable limit
-		PaginationTimeout:  5 * time.Minute,
-		StreamingBatchSize: 10, // Process 10 items at a time
-		DatabaseIDs:        []string{},
-		PageIDs:            []string{},
-		Filters:            []NotionTypeFilter{},
-		SearchQuery:        "",
-		DateRange:          nil,
-		Properties:         []string{},
-	}
-}
-
 // NewNotionSource creates a new Notion data source
-func NewNotionSource(client *client.Client, config NotionSourceConfig) *NotionSource {
-	return &NotionSource{
+func NewNotionSource(client *client.Client, config NotionSourceConfig) *Plugin {
+	return &Plugin{
 		client: client,
 		config: config,
 		metrics: &NotionSourceMetrics{
@@ -123,7 +33,7 @@ func NewNotionSource(client *client.Client, config NotionSourceConfig) *NotionSo
 	}
 }
 
-func (ns *NotionSource) Read(ctx context.Context, req *engine.ReadRequest) (<-chan engine.DataItemContainer, error) {
+func (ns *Plugin) Read(ctx context.Context, req *engine.ReadRequest) (<-chan engine.DataItemContainer[any], error) {
 	// Validate request
 	if err := ns.Validate(req); err != nil {
 		return nil, fmt.Errorf("invalid read request: %w", err)
@@ -131,19 +41,43 @@ func (ns *NotionSource) Read(ctx context.Context, req *engine.ReadRequest) (<-ch
 
 	// Make a larger buffer to handle concurrent processing burst
 	bufferSize := ns.config.PageSize * ns.config.MaxConcurrent * 10
-	results := make(chan engine.DataItemContainer, bufferSize)
+	results := make(chan engine.DataItemContainer[any], bufferSize)
 
 	go func() {
-		defer close(results)
 		defer ns.updateEndTime()
-		ns.readData(ctx, req, results)
+		defer close(results)
+
+		var wg sync.WaitGroup
+
+		for _, objType := range req.Types {
+			switch objType {
+			case common.ObjectTypePage:
+				if ns.config.IncludePages {
+					wg.Add(1)
+					go func() {
+						defer wg.Done()
+						ns.searchPages(ctx, results)
+					}()
+				}
+			case common.ObjectTypeCollection:
+				if ns.config.IncludeCollections {
+					wg.Add(1)
+					go func() {
+						defer wg.Done()
+						ns.readDatabases(ctx, results)
+					}()
+				}
+			}
+		}
+
+		wg.Wait()
 	}()
 
 	return results, nil
 }
 
 // Validate implements DataSource.Validate
-func (ns *NotionSource) Validate(req *engine.ReadRequest) error {
+func (ns *Plugin) Validate(req *engine.ReadRequest) error {
 	if ns.client == nil {
 		return fmt.Errorf("notion client is required")
 	}
@@ -159,10 +93,10 @@ func (ns *NotionSource) Validate(req *engine.ReadRequest) error {
 }
 
 // SupportsType implements DataSource.SupportsType
-func (ns *NotionSource) SupportsType(objType engine.ObjectType) bool {
+func (ns *Plugin) SupportsType(objType common.ObjectType) bool {
 	switch objType {
-	case engine.ObjectTypePage, engine.ObjectTypeDatabase, engine.ObjectTypeBlock,
-		engine.ObjectTypeComment, engine.ObjectTypeUser:
+	case common.ObjectTypePage, common.ObjectTypeCollection, common.ObjectTypeBlock,
+		common.ObjectTypeComment, common.ObjectTypeUser:
 		return true
 	default:
 		return false
@@ -170,12 +104,12 @@ func (ns *NotionSource) SupportsType(objType engine.ObjectType) bool {
 }
 
 // Config implements DataSource.Config
-func (ns *NotionSource) Config() engine.SourceConfig {
+func (ns *Plugin) Config() engine.SourceConfig {
 	return engine.SourceConfig{
 		Type: "notion",
 		Name: "Notion API Source",
 		Properties: map[string]interface{}{
-			"include_databases":   ns.config.IncludeDatabases,
+			"include_databases":   ns.config.IncludeCollections,
 			"include_pages":       ns.config.IncludePages,
 			"include_blocks":      ns.config.IncludeBlocks,
 			"include_comments":    ns.config.IncludeComments,
@@ -189,44 +123,20 @@ func (ns *NotionSource) Config() engine.SourceConfig {
 }
 
 // Close implements DataSource.Close
-func (ns *NotionSource) Close() error {
+func (ns *Plugin) Close() error {
 	ns.updateEndTime()
 	return nil
 }
 
-// Helper methods for data processing
-
-// readData orchestrates the data reading process
-func (ns *NotionSource) readData(ctx context.Context, req *engine.ReadRequest, results chan<- engine.DataItemContainer) {
-	var wg sync.WaitGroup
-
-	// Handle each object type requested
-	for _, objType := range req.Types {
-		switch objType {
-		case engine.ObjectTypePage:
-			if ns.config.IncludePages {
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
-					ns.searchPages(ctx, results)
-				}()
-			}
-		case engine.ObjectTypeDatabase:
-			if ns.config.IncludeDatabases {
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
-					ns.readDatabases(ctx, results)
-				}()
-			}
-		}
-	}
-
-	wg.Wait()
-}
-
-// searchPages performs paginated search for pages with streaming
-func (ns *NotionSource) searchPages(ctx context.Context, results chan<- engine.DataItemContainer) {
+// searchPages performs paginated search for pages with streaming.
+//
+// Arguments:
+// - ctx: The context for the request.
+// - results: The channel to send the results to.
+//
+// Returns:
+// - The processed pages.
+func (ns *Plugin) searchPages(ctx context.Context, results chan<- engine.DataItemContainer[any]) {
 	searchReq := types.SearchRequest{
 		Query: ns.config.SearchQuery,
 		Filter: &types.SearchFilter{
@@ -236,11 +146,15 @@ func (ns *NotionSource) searchPages(ctx context.Context, results chan<- engine.D
 		PageSize: &ns.config.PageSize,
 	}
 
+	multilog.Debug("notion.searchPages", "searchReq", map[string]interface{}{
+		"searchReq": searchReq,
+	})
+
 	ns.incrementRequestCount()
-	// Use streaming query for pagination
+	// Use streaming query for pagination.
 	searchResults := ns.client.Registry.Search().Stream(ctx, searchReq)
 
-	// Process paginated results as they stream in
+	// Process paginated results as they stream in.
 	for result := range searchResults {
 		if result.IsError() {
 			ns.incrementErrorCount()
@@ -248,14 +162,27 @@ func (ns *NotionSource) searchPages(ctx context.Context, results chan<- engine.D
 		}
 
 		if result.Data.Page != nil {
-			// Process each page concurrently
-			go ns.processPageConcurrently(ctx, result.Data.Page, results)
+			item := ns.convertPageDataToDataItem(result.Data.Page)
+			select {
+			case results <- *item:
+				ns.incrementPageCount()
+			case <-ctx.Done():
+				return
+			}
 		}
 	}
 }
 
-// processPageConcurrently processes a single page with concurrency control
-func (ns *NotionSource) processPageConcurrently(ctx context.Context, page *types.Page, results chan<- engine.DataItemContainer) {
+// getPage processes a single page.
+//
+// Arguments:
+// - ctx: The context for the request.
+// - page: The page to process.
+// - results: The channel to send the results to.
+//
+// Returns:
+// - The processed page.
+func (ns *Plugin) getPage(ctx context.Context, page *types.Page, results chan<- engine.DataItemContainer[any]) {
 	// Simple concurrency control using a semaphore pattern
 	semaphore := make(chan struct{}, ns.config.MaxConcurrent)
 	semaphore <- struct{}{}
@@ -307,7 +234,7 @@ func (ns *NotionSource) processPageConcurrently(ctx context.Context, page *types
 }
 
 // readDatabases reads databases from the workspace
-func (ns *NotionSource) readDatabases(ctx context.Context, results chan<- engine.DataItemContainer) {
+func (ns *Plugin) readDatabases(ctx context.Context, results chan<- engine.DataItemContainer[any]) {
 	// Search for databases
 	searchReq := types.SearchRequest{
 		Filter: &types.SearchFilter{
@@ -339,14 +266,51 @@ func (ns *NotionSource) readDatabases(ctx context.Context, results chan<- engine
 }
 
 // Data conversion methods
-func (ns *NotionSource) convertPageToDataItem(page *client.GetPageResult) *engine.DataItemContainer {
+
+// convertPageDataToDataItem converts a basic page from search results to a data item
+func (ns *Plugin) convertPageDataToDataItem(page *types.Page) *engine.DataItemContainer[any] {
 	now := time.Now()
-	return &engine.DataItemContainer{
-		ID:   string(page.Page.ID),
-		Type: engine.ObjectTypePage,
+	return &engine.DataItemContainer[any]{
+		ID:   string(page.ID),
+		Type: common.ObjectTypePage,
 		Data: page,
 		Metadata: engine.ItemMetadata{
 			SourceType:  "notion",
+			SourceID:    string(page.ID),
+			OriginalID:  string(page.ID),
+			CreatedAt:   page.CreatedTime,
+			ModifiedAt:  page.LastEditedTime,
+			ProcessedAt: &now,
+			ValidationState: engine.ValidationState{
+				IsValid:     false,
+				ValidatedAt: now,
+			},
+			TransformState: engine.TransformState{
+				IsTransformed: false,
+			},
+			ProcessingState: engine.ProcessingState{
+				Phase:     engine.PhaseRead,
+				Status:    engine.ProcessingStatusPending,
+				StartedAt: now,
+			},
+			Properties: map[string]interface{}{
+				"archived":   page.Archived,
+				"created_by": page.CreatedBy,
+				"edited_by":  page.LastEditedBy,
+			},
+		},
+	}
+}
+
+func (ns *Plugin) convertPageToDataItem(page *client.GetPageResult) *engine.DataItemContainer[any] {
+	now := time.Now()
+	return &engine.DataItemContainer[any]{
+		ID:   string(page.Page.ID),
+		Type: common.ObjectTypePage,
+		Data: page,
+		Metadata: engine.ItemMetadata{
+			SourceType:  "notion",
+			SourceID:    string(page.Page.ID),
 			OriginalID:  string(page.Page.ID),
 			CreatedAt:   page.Page.CreatedTime,
 			ModifiedAt:  page.Page.LastEditedTime,
@@ -373,14 +337,15 @@ func (ns *NotionSource) convertPageToDataItem(page *client.GetPageResult) *engin
 	}
 }
 
-func (ns *NotionSource) convertBlockToDataItem(block *types.Block, parentID string) *engine.DataItemContainer {
+func (ns *Plugin) convertBlockToDataItem(block *types.Block, parentID string) *engine.DataItemContainer[any] {
 	now := time.Now()
-	return &engine.DataItemContainer{
+	return &engine.DataItemContainer[any]{
 		ID:   string(block.ID),
-		Type: engine.ObjectTypeBlock,
+		Type: common.ObjectTypeBlock,
 		Data: block,
 		Metadata: engine.ItemMetadata{
 			SourceType:  "notion",
+			SourceID:    string(block.ID),
 			OriginalID:  string(block.ID),
 			CreatedAt:   block.CreatedTime,
 			ModifiedAt:  block.LastEditedTime,
@@ -406,14 +371,15 @@ func (ns *NotionSource) convertBlockToDataItem(block *types.Block, parentID stri
 	}
 }
 
-func (ns *NotionSource) convertDatabaseToDataItem(database *types.Database) *engine.DataItemContainer {
+func (ns *Plugin) convertDatabaseToDataItem(database *types.Database) *engine.DataItemContainer[any] {
 	now := time.Now()
-	return &engine.DataItemContainer{
+	return &engine.DataItemContainer[any]{
 		ID:   string(database.ID),
-		Type: engine.ObjectTypeDatabase,
+		Type: common.ObjectTypeCollection,
 		Data: database,
 		Metadata: engine.ItemMetadata{
 			SourceType:  "notion",
+			SourceID:    string(database.ID),
 			OriginalID:  string(database.ID),
 			CreatedAt:   database.CreatedTime,
 			ModifiedAt:  database.LastEditedTime,

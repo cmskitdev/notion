@@ -3,7 +3,7 @@ package notion
 import "time"
 
 // GetMetrics returns current source metrics (copy without mutex)
-func (ns *NotionSource) GetMetrics() NotionSourceMetrics {
+func (ns *Plugin) GetMetrics() NotionSourceMetrics {
 	ns.metrics.mu.RLock()
 	defer ns.metrics.mu.RUnlock()
 
@@ -25,54 +25,54 @@ func (ns *NotionSource) GetMetrics() NotionSourceMetrics {
 
 // Helper methods for metrics
 
-func (ns *NotionSource) incrementPageCount() {
+func (ns *Plugin) incrementPageCount() {
 	ns.metrics.mu.Lock()
 	defer ns.metrics.mu.Unlock()
 	ns.metrics.PagesRead++
 	ns.metrics.ObjectsRead++
 }
 
-func (ns *NotionSource) incrementBlockCount() {
+func (ns *Plugin) incrementBlockCount() {
 	ns.metrics.mu.Lock()
 	defer ns.metrics.mu.Unlock()
 	ns.metrics.BlocksRead++
 	ns.metrics.ObjectsRead++
 }
 
-func (ns *NotionSource) incrementCommentCount() {
+func (ns *Plugin) incrementCommentCount() {
 	ns.metrics.mu.Lock()
 	defer ns.metrics.mu.Unlock()
 	ns.metrics.CommentsRead++
 	ns.metrics.ObjectsRead++
 }
 
-func (ns *NotionSource) incrementDatabaseCount() {
+func (ns *Plugin) incrementDatabaseCount() {
 	ns.metrics.mu.Lock()
 	defer ns.metrics.mu.Unlock()
 	ns.metrics.DatabasesRead++
 	ns.metrics.ObjectsRead++
 }
 
-func (ns *NotionSource) incrementUserCount() {
+func (ns *Plugin) incrementUserCount() {
 	ns.metrics.mu.Lock()
 	defer ns.metrics.mu.Unlock()
 	ns.metrics.UsersRead++
 	ns.metrics.ObjectsRead++
 }
 
-func (ns *NotionSource) incrementRequestCount() {
+func (ns *Plugin) incrementRequestCount() {
 	ns.metrics.mu.Lock()
 	defer ns.metrics.mu.Unlock()
 	ns.metrics.RequestsMade++
 }
 
-func (ns *NotionSource) incrementErrorCount() {
+func (ns *Plugin) incrementErrorCount() {
 	ns.metrics.mu.Lock()
 	defer ns.metrics.mu.Unlock()
 	ns.metrics.ErrorsEncountered++
 }
 
-func (ns *NotionSource) updateEndTime() {
+func (ns *Plugin) updateEndTime() {
 	ns.metrics.mu.Lock()
 	defer ns.metrics.mu.Unlock()
 	now := time.Now()

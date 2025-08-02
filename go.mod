@@ -4,7 +4,9 @@ go 1.24.2
 
 require (
 	github.com/cmskitdev/client v0.0.0-20250801072105-59648a9661cb
+	github.com/cmskitdev/common v0.0.0-20250801151543-65d32db5db38
 	github.com/cmskitdev/engine v0.0.0-20250801071936-63dc5c1a7a56
+	github.com/mateothegreat/go-multilog v0.0.0-20250627190626-359729313052
 )
 
 require (
@@ -13,7 +15,6 @@ require (
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/mateothegreat/go-multilog v0.0.0-20250627190626-359729313052 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
